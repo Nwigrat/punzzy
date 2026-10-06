@@ -4,7 +4,7 @@ A responsive TypeScript web game built with Expo Router and React Native Web. Pl
 
 ## Run locally
 
-Install Node.js 22.13 or newer, then:
+Install Node.js 22 (22.13 or newer within that major version), then:
 
 ```sh
 npm ci
@@ -22,6 +22,12 @@ npm run build
 The generated `dist/` directory is a static website. Publish its contents to a static web host at the domain root. Build command: `npm run build`; output directory: `dist`. Build output is ignored by Git. This is a browser app, not an offline-installable PWA.
 
 ## Game and storage
+
+### Vercel deployment
+
+The root `vercel.json` explicitly selects the static `dist` output and runs `npm run build`. Set the Vercel project's Root Directory to the repository root. Pushes to the connected production branch trigger deployment. The exported `dist/index.html` serves `/`; no catch-all rewrite is needed for the statically exported routes. Node is restricted to major version 22 to avoid automatic major upgrades.
+
+If an older deployment shows Vercel's 404 despite a successful export, deploy the commit containing `vercel.json` and check that its output includes `index.html` and `_expo/`. A successful export alone does not confirm that the host published the correct directory.
 
 Six puzzles are adapted from [Sarah Withee's puns](https://github.com/geekygirlsarah/puns), with custom hints and answer variants. See [third-party attribution](THIRD_PARTY_NOTICES.md) and the [upstream MIT license](public/licenses/geekygirlsarah-puns.txt). Content is bundled locally; playing never calls GitHub.
 
