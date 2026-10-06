@@ -59,8 +59,8 @@ export default function GameScreen() {
             <Text style={styles.muted}>Find the pun. Need a nudge? Reveal a hint.</Text>
             <Text style={styles.muted}>Puzzle {progress.index + 1} of {puzzles.length} · {progress.index + Number(progress.solved)} solved</Text>
             <View style={styles.card}>
-              <Image source={puzzle.image} style={styles.image} resizeMode="contain" accessibilityLabel="Placeholder puzzle artwork; the clue is written below" />
-              <Text style={styles.placeholder}>PLACEHOLDER ART</Text>
+              <Image source={puzzle.image} style={[styles.image, puzzle.hasArtwork && styles.artwork]} resizeMode="contain" accessibilityLabel={puzzle.hasArtwork ? `Illustration for puzzle ${progress.index + 1}; the clue is written below` : 'Placeholder puzzle artwork; the clue is written below'} />
+              {!puzzle.hasArtwork && <Text style={styles.placeholder}>PLACEHOLDER ART</Text>}
               <Text style={styles.clue}>{puzzle.clue}</Text>
             </View>
             {progress.solved ? (
@@ -106,6 +106,7 @@ const styles = StyleSheet.create({
   muted: { color: '#62665d', fontSize: 15 },
   card: { backgroundColor: '#fff', borderRadius: 20, padding: 20, gap: 12, marginVertical: 8 },
   image: { width: '100%', height: 170 },
+  artwork: { height: undefined, aspectRatio: 1 },
   placeholder: { fontSize: 10, letterSpacing: 2, textAlign: 'center', color: '#77766f' },
   clue: { fontSize: 23, fontWeight: '600', color: '#252c23', textAlign: 'center', lineHeight: 31 },
   section: { gap: 12 },
