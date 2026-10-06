@@ -80,8 +80,9 @@ export default function GameScreen() {
                 </Pressable>
                 {!!feedback && <Text accessibilityLiveRegion="polite" style={styles.error}>{feedback}</Text>}
                 <Pressable accessibilityRole="button" accessibilityState={{ disabled: progress.hints === puzzle.hints.length }} disabled={progress.hints === puzzle.hints.length} style={styles.secondary} onPress={() => updateProgress({ ...progress, hints: progress.hints + 1 })}>
-                  <Text style={styles.label}>{progress.hints === puzzle.hints.length ? 'All hints revealed' : `Reveal a hint (${progress.hints}/${puzzle.hints.length})`}</Text>
+                  <Text style={styles.label}>{progress.hints === puzzle.hints.length ? 'Answer revealed' : progress.hints === puzzle.hints.length - 1 ? 'Reveal answer (hint 3 of 3)' : `Reveal a hint (${progress.hints}/${puzzle.hints.length})`}</Text>
                 </Pressable>
+                <Text style={styles.muted}>The third hint reveals the answer.</Text>
               </View>
             )}
             <View accessibilityLiveRegion="polite" style={styles.section}>
