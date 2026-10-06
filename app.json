@@ -1,7 +1,8 @@
 {
   "expo": {
-    "name": "pun-puzzle-init",
+    "name": "Pun Puzzle",
     "slug": "pun-puzzle-init",
+    "scheme": "punpuzzle",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -19,7 +20,12 @@
       "predictiveBackGestureEnabled": false
     },
     "web": {
+      "bundler": "metro",
+      "output": "static",
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-router"
+    ]
   }
 }
