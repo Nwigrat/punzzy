@@ -24,3 +24,7 @@ export async function loadProgress(): Promise<Progress> {
 export function saveProgress(progress: Progress): Promise<void> {
   return AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
 }
+
+export function eraseProgress(): Promise<void> {
+  return AsyncStorage.removeItem(STORAGE_KEY);
+}

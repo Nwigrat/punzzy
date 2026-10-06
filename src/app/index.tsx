@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Image, Keyboard, KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { isAcceptedAnswer, puzzles } from '../data/puzzles';
-import { initialProgress, loadProgress, saveProgress, type Progress } from '../game/progress';
+import { eraseProgress, initialProgress, loadProgress, saveProgress, type Progress } from '../game/progress';
 
 export default function GameScreen() {
   const [progress, setProgress] = useState<Progress>(initialProgress);
@@ -11,6 +11,10 @@ export default function GameScreen() {
   const [feedback, setFeedback] = useState('');
   const [storageError, setStorageError] = useState('');
   const writes = useRef(Promise.resolve());
+  const [confirmErase, setConfirmErase] = useState(false);
+  const [erasing, setErasing] = useState(false);
+  const eraseInFlight = useRef(false);
+  const [eraseMessage, setEraseMessage] = useState('');
 
   useEffect(() => {
     let active = true;
@@ -22,6 +26,8 @@ export default function GameScreen() {
   }, []);
 
   function updateProgress(next: Progress) {
+    if (eraseInFlight.current) return;
+    setEraseMessage('');
     setProgress(next);
     // Serialize writes so quick taps cannot leave an older save on disk.
     writes.current = writes.current.then(() => saveProgress(next))
@@ -31,6 +37,28 @@ export default function GameScreen() {
 
   const puzzle = puzzles[progress.index];
   const finished = progress.solved && progress.index === puzzles.length - 1;
+
+  async function confirmEraseProgress() {
+    if (!confirmErase || eraseInFlight.current) return;
+    eraseInFlight.current = true;
+    setErasing(true);
+    try {
+      // Finish pending saves first so they cannot restore deleted progress.
+      await writes.current;
+      await eraseProgress();
+      setProgress(initialProgress);
+      setAnswer('');
+      setFeedback('');
+      setStorageError('');
+      setConfirmErase(false);
+      setEraseMessage('Saved progress erased. You are back at puzzle 1.');
+    } catch {
+      setEraseMessage('Could not erase saved progress. Please try again.');
+    } finally {
+      eraseInFlight.current = false;
+      setErasing(false);
+    }
+  }
 
   function checkAnswer() {
     if (progress.solved || !answer.trim()) return;
@@ -57,6 +85,19 @@ export default function GameScreen() {
             <Text style={styles.eyebrow}>A LITTLE WORDPLAY</Text>
             <Text accessibilityRole="header" style={styles.title}>Pun Puzzle</Text>
             <Text style={styles.muted}>Find the pun. Need a nudge? Reveal a hint.</Text>
+            {confirmErase ? (
+              <View style={styles.section}>
+                <Text accessibilityRole="header" style={styles.clue}>Erase saved progress?</Text>
+                <Text style={styles.muted}>This deletes your solved puzzles and revealed hints on this device and starts again at puzzle 1. This cannot be undone.</Text>
+                <Pressable accessibilityRole="button" disabled={erasing} accessibilityState={{ disabled: erasing }} style={styles.secondary} onPress={() => { setConfirmErase(false); setEraseMessage(''); }}>
+                  <Text style={styles.label}>Cancel — keep my progress</Text>
+                </Pressable>
+                <Pressable accessibilityRole="button" disabled={erasing} accessibilityState={{ disabled: erasing }} style={[styles.primary, styles.destructive, erasing && styles.disabled]} onPress={confirmEraseProgress}>
+                  <Text style={styles.primaryText}>{erasing ? 'Erasing…' : 'Yes, erase saved progress'}</Text>
+                </Pressable>
+              </View>
+            ) : (
+            <>
             <Text style={styles.muted}>Puzzle {progress.index + 1} of {puzzles.length} · {progress.index + Number(progress.solved)} solved</Text>
             <View style={styles.card}>
               <Image source={puzzle.image} style={[styles.image, puzzle.hasArtwork && styles.artwork]} resizeMode="contain" accessibilityLabel={puzzle.hasArtwork ? `Illustration for puzzle ${progress.index + 1}; the clue is written below` : 'Placeholder puzzle artwork; the clue is written below'} />
@@ -90,6 +131,12 @@ export default function GameScreen() {
             </View>
             {!!storageError && <Text accessibilityLiveRegion="polite" style={styles.error}>{storageError}</Text>}
             <Text style={styles.footer}>Small puzzles. Big groans.{Platform.OS === 'web' ? '\nProgress stays in this browser.' : ''}</Text>
+            <Pressable accessibilityRole="button" style={styles.secondary} onPress={() => { Keyboard.dismiss(); setEraseMessage(''); setConfirmErase(true); }}>
+              <Text style={styles.error}>Erase saved progress</Text>
+            </Pressable>
+            </>
+            )}
+            {!!eraseMessage && <Text accessibilityLiveRegion="polite" style={styles.muted}>{eraseMessage}</Text>}
           </ScrollView>
         )}
       </KeyboardAvoidingView>
@@ -116,6 +163,7 @@ const styles = StyleSheet.create({
   primaryText: { color: '#fff', fontWeight: '700', fontSize: 16 },
   secondary: { padding: 16, alignItems: 'center', minHeight: 52 },
   disabled: { opacity: 0.45 },
+  destructive: { backgroundColor: '#963e29' },
   error: { color: '#963e29', fontSize: 15, lineHeight: 22 },
   success: { color: '#344c36', fontSize: 24, fontWeight: '700', textAlign: 'center' },
   answer: { textAlign: 'center', fontSize: 20, color: '#344c36' },
