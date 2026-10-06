@@ -1,6 +1,6 @@
 # Pun Puzzle
 
-A responsive TypeScript web game built with Expo Router and React Native Web. Play three local pun puzzles, type answers, reveal hints one at a time, and move on after solving. No account or backend is required.
+A responsive TypeScript web game built with Expo Router and React Native Web. Play 100 local pun puzzles, type answers, reveal hints one at a time, and move on after solving. No account or backend is required.
 
 ## Run locally
 
@@ -23,7 +23,9 @@ The generated `dist/` directory is a static website. Publish its contents to a s
 
 ## Game and storage
 
-Edit `src/data/puzzles.ts` for clues, accepted answers, hints, and local images. The puzzles currently reuse `assets/puzzle-placeholder.png`. Answer matching ignores case, spaces, and punctuation.
+Six puzzles are adapted from [Sarah Withee's puns](https://github.com/geekygirlsarah/puns), with custom hints and answer variants. See [third-party attribution](THIRD_PARTY_NOTICES.md) and the [upstream MIT license](public/licenses/geekygirlsarah-puns.txt). Content is bundled locally; playing never calls GitHub.
+
+The original nine puzzles live in `src/data/puzzles.ts`; 91 additional locally curated puzzles live in `src/data/extra-puzzles.ts`. Each new entry has a stable ID, clue, answer, two guiding hints, and optional answer variants. Its third hint reveals the answer. These additional entries are not imports from Sarah Withee's repository. All puzzles reuse `assets/puzzle-placeholder.png`. Answer matching ignores case, spaces, and punctuation. Append new puzzles to preserve index-based saves.
 
 Progress (current puzzle, hints, solved state) is stored locally in the browser using AsyncStorage's web implementation. Reloading keeps it; clearing browser site data removes it. Different browsers and site addresses have separate saves. Typed drafts are not saved.
 
@@ -32,12 +34,13 @@ Progress (current puzzle, hints, solved state) is stored locally in the browser 
 ```sh
 npm run lint
 npm run typecheck
+npm run test:puzzles
 npm run build
 ```
 
 GitHub Actions runs these checks on pushes and pull requests.
 
-Manual check: submit an incorrect answer, reveal a hint, reload, solve with `AN IM-PASTA!`, reload again, advance and solve `nacho cheese` and `gummy bear`, then select Play again.
+Manual check: submit an incorrect answer, reveal a hint, reload, solve with `AN IM-PASTA!`, reload again, then advance. The next eight answers are `nacho cheese`, `gummy bear`, `can I join you`, `C`, `that hertz`, `I'm positive`, `no charge`, `Na`. A previously completed save should now unlock Next puzzle and continue into the added collection. Puzzle 100 accepts `parallel`; solving it should offer Play again.
 
 ## Push to your repository
 
